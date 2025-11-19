@@ -252,5 +252,17 @@ class DatabaseSeeder extends Seeder
         echo "  Email: ahmed.khan@email.com\n";
         echo "  Password: parent123\n";
         echo "===========================================\n";
+
+        // Seed all other modules
+        echo "\nSeeding additional modules...\n";
+        $this->call([
+            AdmissionSeeder::class,
+            EventSeeder::class,
+            EmployeeSeeder::class,
+            InventorySeeder::class,
+            TransactionSeeder::class,
+            AttendanceSeeder::class,
+            EvaluationSeeder::class,
+        ]);
     }
 }
