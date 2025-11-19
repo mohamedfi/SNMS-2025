@@ -16,12 +16,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create Admin User
-        $admin = User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@steps.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-        ]);
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@steps.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+            ]
+        );
 
         echo "✓ Admin created - Email: admin@steps.com, Password: password123\n";
 
@@ -97,17 +99,22 @@ class DatabaseSeeder extends Seeder
 
         $createdTeachers = [];
         foreach ($teachers as $teacherData) {
-            $teacher = Teacher::create($teacherData);
+            $teacher = Teacher::updateOrCreate(
+                ['email' => $teacherData['email']],
+                $teacherData
+            );
             $createdTeachers[] = $teacher;
 
             // Create user account for each teacher
-            User::create([
-                'name' => $teacher->first_name . ' ' . $teacher->last_name,
-                'email' => $teacher->email,
-                'password' => Hash::make('teacher123'),
-                'role' => 'teacher',
-                'teacher_id' => $teacher->id,
-            ]);
+            User::updateOrCreate(
+                ['email' => $teacher->email],
+                [
+                    'name' => $teacher->first_name . ' ' . $teacher->last_name,
+                    'password' => Hash::make('teacher123'),
+                    'role' => 'teacher',
+                    'teacher_id' => $teacher->id,
+                ]
+            );
 
             echo "✓ Teacher created - {$teacher->first_name} {$teacher->last_name} (Email: {$teacher->email}, Password: teacher123)\n";
         }
@@ -217,16 +224,21 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($students as $studentData) {
-            $student = Student::create($studentData);
+            $student = Student::updateOrCreate(
+                ['student_id' => $studentData['student_id']],
+                $studentData
+            );
 
             // Create parent user account for each student
-            User::create([
-                'name' => $student->parent_name,
-                'email' => $student->parent_email,
-                'password' => Hash::make('parent123'),
-                'role' => 'parent',
-                'student_id' => $student->id,
-            ]);
+            User::updateOrCreate(
+                ['email' => $student->parent_email],
+                [
+                    'name' => $student->parent_name,
+                    'password' => Hash::make('parent123'),
+                    'role' => 'parent',
+                    'student_id' => $student->id,
+                ]
+            );
 
             echo "✓ Student created - {$student->first_name} {$student->last_name} (Parent Email: {$student->parent_email}, Password: parent123)\n";
         }
