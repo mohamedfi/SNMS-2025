@@ -14,32 +14,38 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Admin User
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@steps.com',
-            'password' => Hash::make('password123'),
-            'role' => 'admin',
-        ]);
+        // Create or update Admin User
+        User::updateOrCreate(
+            ['email' => 'admin@steps.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+            ]
+        );
 
-        // Create Teacher User (without teacher_id initially)
-        User::create([
-            'name' => 'Sarah Johnson',
-            'email' => 'sarah.johnson@steps.com',
-            'password' => Hash::make('teacher123'),
-            'role' => 'teacher',
-        ]);
+        // Create or update Teacher User
+        User::updateOrCreate(
+            ['email' => 'sarah.johnson@steps.com'],
+            [
+                'name' => 'Sarah Johnson',
+                'password' => Hash::make('teacher123'),
+                'role' => 'teacher',
+            ]
+        );
 
-        // Create Parent User (without student_id initially)
-        User::create([
-            'name' => 'Robert Smith',
-            'email' => 'robert.smith@email.com',
-            'password' => Hash::make('parent123'),
-            'role' => 'parent',
-        ]);
+        // Create or update Parent User
+        User::updateOrCreate(
+            ['email' => 'robert.smith@email.com'],
+            [
+                'name' => 'Robert Smith',
+                'password' => Hash::make('parent123'),
+                'role' => 'parent',
+            ]
+        );
 
         echo "\n=================================\n";
-        echo "Users created successfully!\n";
+        echo "Users created/updated successfully!\n";
         echo "=================================\n";
         echo "Admin: admin@steps.com / password123\n";
         echo "Teacher: sarah.johnson@steps.com / teacher123\n";
