@@ -15,8 +15,7 @@ import {
   Package,
   Menu,
   X,
-  LogOut,
-  User
+  LogOut
 } from 'lucide-react'
 
 const Layout = () => {
@@ -55,7 +54,7 @@ const Layout = () => {
             {/* Logo - Round Shape */}
             <div className="flex-shrink-0 flex items-center gap-3">
               {!logoError ? (
-                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary-200 dark:ring-primary-700 shadow-md">
+                <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-primary-200 dark:ring-primary-700 shadow-md">
                   <img
                     src="/Steps_logo.jpeg"
                     alt="Steps Nursery"
@@ -64,13 +63,10 @@ const Layout = () => {
                   />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 flex items-center justify-center shadow-md">
-                  <GraduationCap className="h-7 w-7 text-white" />
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 flex items-center justify-center shadow-md">
+                  <GraduationCap className="h-8 w-8 text-white" />
                 </div>
               )}
-              <h1 className="hidden sm:block text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
-                Steps NMS
-              </h1>
             </div>
 
             {/* Desktop Menu - Icons on top, text below */}
@@ -95,29 +91,18 @@ const Layout = () => {
               })}
             </div>
 
-            {/* Right Side - User Info & Actions */}
+            {/* Right Side - Actions */}
             <div className="flex items-center gap-3">
-              {/* User Info - Desktop */}
-              <div className="hidden xl:flex items-center gap-3 px-3 py-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 flex items-center justify-center shadow-md">
-                  <User className="h-5 w-5 text-white" />
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{user?.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize leading-tight">{user?.role}</p>
-                </div>
-              </div>
-
               {/* Theme Toggle */}
               <ThemeToggle />
 
               {/* Logout Button - Desktop */}
               <button
                 onClick={handleLogout}
-                className="hidden md:flex items-center gap-2 bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium hover:from-primary-700 hover:to-primary-800 dark:hover:from-primary-600 dark:hover:to-primary-700 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105"
+                className="hidden md:flex flex-col items-center justify-center px-4 py-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white hover:from-primary-700 hover:to-primary-800 dark:hover:from-primary-600 dark:hover:to-primary-700 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 min-w-[80px]"
               >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden lg:inline">Logout</span>
+                <LogOut className="h-6 w-6 mb-1" />
+                <span className="text-sm font-semibold">Logout</span>
               </button>
 
               {/* Mobile Menu Button */}
@@ -140,17 +125,6 @@ const Layout = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <div className="px-4 pt-3 pb-4 space-y-2">
-              {/* Mobile User Info */}
-              <div className="flex items-center gap-3 px-4 py-3 mb-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 flex items-center justify-center shadow-md">
-                  <User className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{user?.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user?.role}</p>
-                </div>
-              </div>
-
               {/* Mobile Menu Items */}
               {menuItems.map((item) => {
                 const Icon = item.icon
@@ -175,10 +149,10 @@ const Layout = () => {
               {/* Mobile Logout Button */}
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 mt-3 text-base font-medium text-white bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 hover:from-primary-700 hover:to-primary-800 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg"
+                className="w-full flex flex-col items-center justify-center px-4 py-4 mt-3 text-white bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 hover:from-primary-700 hover:to-primary-800 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg"
               >
-                <LogOut className="h-5 w-5" />
-                <span>Logout</span>
+                <LogOut className="h-7 w-7 mb-2" />
+                <span className="text-base font-semibold">Logout</span>
               </button>
             </div>
           </div>
