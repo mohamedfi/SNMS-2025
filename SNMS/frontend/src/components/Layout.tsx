@@ -92,17 +92,25 @@ const Layout = () => {
             </div>
 
             {/* Right Side - Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              {/* Logged in user - Desktop */}
+              <div className="hidden md:flex flex-col items-center justify-center px-3 py-2 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 min-w-[70px] border border-green-200 dark:border-green-800">
+                <div className="h-5 w-5 mb-1 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                </div>
+                <span className="text-xs font-medium whitespace-nowrap">{user?.name || 'User'}</span>
+              </div>
+
               {/* Theme Toggle */}
               <ThemeToggle />
 
               {/* Logout Button - Desktop */}
               <button
                 onClick={handleLogout}
-                className="hidden md:flex flex-col items-center justify-center px-4 py-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 text-white hover:from-primary-700 hover:to-primary-800 dark:hover:from-primary-600 dark:hover:to-primary-700 transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 min-w-[80px]"
+                className="hidden md:flex flex-col items-center justify-center px-3 py-2 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200 min-w-[70px] group"
               >
-                <LogOut className="h-6 w-6 mb-1" />
-                <span className="text-sm font-semibold">Logout</span>
+                <LogOut className="h-5 w-5 mb-1 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-medium">Logout</span>
               </button>
 
               {/* Mobile Menu Button */}
@@ -125,6 +133,17 @@ const Layout = () => {
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <div className="px-4 pt-3 pb-4 space-y-2">
+              {/* Mobile User Info */}
+              <div className="flex items-center gap-4 px-4 py-3 mb-2 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800">
+                <div className="h-10 w-10 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-lg font-bold">{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold">{user?.name || 'User'}</span>
+                  <span className="text-xs opacity-75">Logged in</span>
+                </div>
+              </div>
+
               {/* Mobile Menu Items */}
               {menuItems.map((item) => {
                 const Icon = item.icon
@@ -149,10 +168,10 @@ const Layout = () => {
               {/* Mobile Logout Button */}
               <button
                 onClick={handleLogout}
-                className="w-full flex flex-col items-center justify-center px-4 py-4 mt-3 text-white bg-gradient-to-r from-primary-600 to-primary-700 dark:from-primary-700 dark:to-primary-800 hover:from-primary-700 hover:to-primary-800 transition-all duration-200 rounded-xl shadow-md hover:shadow-lg"
+                className="w-full flex items-center gap-4 px-4 py-3 mt-3 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200 rounded-xl border-l-4 border-transparent hover:border-red-500"
               >
-                <LogOut className="h-7 w-7 mb-2" />
-                <span className="text-base font-semibold">Logout</span>
+                <LogOut className="h-6 w-6" />
+                <span className="text-base font-medium">Logout</span>
               </button>
             </div>
           </div>
