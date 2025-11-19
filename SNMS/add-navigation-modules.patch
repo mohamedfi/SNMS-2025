@@ -1,0 +1,338 @@
+From 9e77449f9af573dee0c9b8057f27f1d64b9c1ac0 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 18 Nov 2025 20:32:15 +0000
+Subject: [PATCH] Add complete navigation menu with all PRD modules
+
+Added 6 new pages based on PRD requirements:
+- Admissions - Online admission system
+- Evaluations - Student progress and evaluations
+- Events - Events and trips management
+- HR - HR and payroll management
+- Finance - Accounting and finance
+- Inventory - Inventory and assets management
+
+Updated Navigation:
+- Added all 10 modules to the navigation bar
+- Made navigation responsive with smaller text on medium screens
+- Used horizontal scrolling for overflow on smaller screens
+- All menu items now visible with proper active state highlighting
+
+Routes:
+- Added routes for all new pages in App.tsx
+- Each page has a consistent dark mode design
+- Placeholder content ready for future implementation
+
+The navigation now shows all core modules from the PRD!
+---
+ frontend/src/App.tsx               | 12 +++++++
+ frontend/src/components/Layout.tsx | 56 ++++++++++++------------------
+ frontend/src/pages/Admissions.tsx  | 24 +++++++++++++
+ frontend/src/pages/Evaluations.tsx | 24 +++++++++++++
+ frontend/src/pages/Events.tsx      | 24 +++++++++++++
+ frontend/src/pages/Finance.tsx     | 27 ++++++++++++++
+ frontend/src/pages/HR.tsx          | 27 ++++++++++++++
+ frontend/src/pages/Inventory.tsx   | 24 +++++++++++++
+ 8 files changed, 185 insertions(+), 33 deletions(-)
+ create mode 100644 frontend/src/pages/Admissions.tsx
+ create mode 100644 frontend/src/pages/Evaluations.tsx
+ create mode 100644 frontend/src/pages/Events.tsx
+ create mode 100644 frontend/src/pages/Finance.tsx
+ create mode 100644 frontend/src/pages/HR.tsx
+ create mode 100644 frontend/src/pages/Inventory.tsx
+
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index 6ce6361..ab67d7d 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@ -6,6 +6,12 @@ import Login from './pages/Login'
+ import Students from './pages/Students'
+ import Teachers from './pages/Teachers'
+ import Attendance from './pages/Attendance'
++import Admissions from './pages/Admissions'
++import Evaluations from './pages/Evaluations'
++import Events from './pages/Events'
++import HR from './pages/HR'
++import Finance from './pages/Finance'
++import Inventory from './pages/Inventory'
+ 
+ function App() {
+   return (
+@@ -16,8 +22,14 @@ function App() {
+           <Route path="/" element={<Layout />}>
+             <Route index element={<Dashboard />} />
+             <Route path="students" element={<Students />} />
++            <Route path="admissions" element={<Admissions />} />
+             <Route path="teachers" element={<Teachers />} />
+             <Route path="attendance" element={<Attendance />} />
++            <Route path="evaluations" element={<Evaluations />} />
++            <Route path="events" element={<Events />} />
++            <Route path="hr" element={<HR />} />
++            <Route path="finance" element={<Finance />} />
++            <Route path="inventory" element={<Inventory />} />
+           </Route>
+         </Routes>
+       </Router>
+diff --git a/frontend/src/components/Layout.tsx b/frontend/src/components/Layout.tsx
+index 77b42cf..aaed91b 100644
+--- a/frontend/src/components/Layout.tsx
++++ b/frontend/src/components/Layout.tsx
+@@ -29,47 +29,37 @@ const Layout = () => {
+                   </h1>
+                 )}
+               </div>
+-              <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
+-                <Link
+-                  to="/"
+-                  className={`${
+-                    isActive('/')
+-                      ? 'border-primary-500 text-gray-900 dark:text-white'
+-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+-                  } inline-flex items-center px-3 pt-1 border-b-2 text-sm font-medium transition-colors`}
+-                >
++              <div className="hidden md:ml-6 md:flex md:space-x-2 lg:space-x-3 overflow-x-auto">
++                <Link to="/" className={`${isActive('/') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
+                   Dashboard
+                 </Link>
+-                <Link
+-                  to="/students"
+-                  className={`${
+-                    isActive('/students')
+-                      ? 'border-primary-500 text-gray-900 dark:text-white'
+-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+-                  } inline-flex items-center px-3 pt-1 border-b-2 text-sm font-medium transition-colors`}
+-                >
++                <Link to="/students" className={`${isActive('/students') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
+                   Students
+                 </Link>
+-                <Link
+-                  to="/teachers"
+-                  className={`${
+-                    isActive('/teachers')
+-                      ? 'border-primary-500 text-gray-900 dark:text-white'
+-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+-                  } inline-flex items-center px-3 pt-1 border-b-2 text-sm font-medium transition-colors`}
+-                >
++                <Link to="/admissions" className={`${isActive('/admissions') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
++                  Admissions
++                </Link>
++                <Link to="/teachers" className={`${isActive('/teachers') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
+                   Teachers
+                 </Link>
+-                <Link
+-                  to="/attendance"
+-                  className={`${
+-                    isActive('/attendance')
+-                      ? 'border-primary-500 text-gray-900 dark:text-white'
+-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+-                  } inline-flex items-center px-3 pt-1 border-b-2 text-sm font-medium transition-colors`}
+-                >
++                <Link to="/attendance" className={`${isActive('/attendance') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
+                   Attendance
+                 </Link>
++                <Link to="/evaluations" className={`${isActive('/evaluations') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
++                  Evaluations
++                </Link>
++                <Link to="/events" className={`${isActive('/events') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
++                  Events
++                </Link>
++                <Link to="/hr" className={`${isActive('/hr') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
++                  HR
++                </Link>
++                <Link to="/finance" className={`${isActive('/finance') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
++                  Finance
++                </Link>
++                <Link to="/inventory" className={`${isActive('/inventory') ? 'border-primary-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'} inline-flex items-center px-2 lg:px-3 pt-1 border-b-2 text-xs lg:text-sm font-medium transition-colors whitespace-nowrap`}>
++                  Inventory
++                </Link>
+               </div>
+             </div>
+             <div className="flex items-center space-x-4">
+diff --git a/frontend/src/pages/Admissions.tsx b/frontend/src/pages/Admissions.tsx
+new file mode 100644
+index 0000000..48e5955
+--- /dev/null
++++ b/frontend/src/pages/Admissions.tsx
+@@ -0,0 +1,24 @@
++const Admissions = () => {
++  return (
++    <div className="px-4 py-6 sm:px-0">
++      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
++        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Online Admissions</h2>
++        <p className="text-gray-600 dark:text-gray-400 mb-6">
++          Manage student applications, interviews, and admission pipeline.
++        </p>
++
++        <div className="mb-6">
++          <button className="bg-primary-600 dark:bg-primary-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors shadow-sm">
++            New Application
++          </button>
++        </div>
++
++        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
++          <p className="text-gray-500 dark:text-gray-400 text-sm">No pending applications.</p>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++export default Admissions
+diff --git a/frontend/src/pages/Evaluations.tsx b/frontend/src/pages/Evaluations.tsx
+new file mode 100644
+index 0000000..42b0c58
+--- /dev/null
++++ b/frontend/src/pages/Evaluations.tsx
+@@ -0,0 +1,24 @@
++const Evaluations = () => {
++  return (
++    <div className="px-4 py-6 sm:px-0">
++      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
++        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Evaluations & Progress</h2>
++        <p className="text-gray-600 dark:text-gray-400 mb-6">
++          Track student evaluations, skills assessment, and progress reports.
++        </p>
++
++        <div className="mb-6">
++          <button className="bg-primary-600 dark:bg-primary-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors shadow-sm">
++            New Evaluation
++          </button>
++        </div>
++
++        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
++          <p className="text-gray-500 dark:text-gray-400 text-sm">No evaluations recorded.</p>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++export default Evaluations
+diff --git a/frontend/src/pages/Events.tsx b/frontend/src/pages/Events.tsx
+new file mode 100644
+index 0000000..31f9731
+--- /dev/null
++++ b/frontend/src/pages/Events.tsx
+@@ -0,0 +1,24 @@
++const Events = () => {
++  return (
++    <div className="px-4 py-6 sm:px-0">
++      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
++        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Events & Trips</h2>
++        <p className="text-gray-600 dark:text-gray-400 mb-6">
++          Manage events, trips, parental permissions, and payments.
++        </p>
++
++        <div className="mb-6">
++          <button className="bg-primary-600 dark:bg-primary-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors shadow-sm">
++            Create Event
++          </button>
++        </div>
++
++        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
++          <p className="text-gray-500 dark:text-gray-400 text-sm">No upcoming events.</p>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++export default Events
+diff --git a/frontend/src/pages/Finance.tsx b/frontend/src/pages/Finance.tsx
+new file mode 100644
+index 0000000..b3009b2
+--- /dev/null
++++ b/frontend/src/pages/Finance.tsx
+@@ -0,0 +1,27 @@
++const Finance = () => {
++  return (
++    <div className="px-4 py-6 sm:px-0">
++      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
++        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Finance & Accounting</h2>
++        <p className="text-gray-600 dark:text-gray-400 mb-6">
++          Manage invoices, expenses, payments, and financial reports.
++        </p>
++
++        <div className="mb-6 flex space-x-4">
++          <button className="bg-primary-600 dark:bg-primary-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors shadow-sm">
++            New Invoice
++          </button>
++          <button className="bg-gray-600 dark:bg-gray-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors shadow-sm">
++            View Reports
++          </button>
++        </div>
++
++        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
++          <p className="text-gray-500 dark:text-gray-400 text-sm">No invoices or expenses recorded.</p>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++export default Finance
+diff --git a/frontend/src/pages/HR.tsx b/frontend/src/pages/HR.tsx
+new file mode 100644
+index 0000000..8ceb5b6
+--- /dev/null
++++ b/frontend/src/pages/HR.tsx
+@@ -0,0 +1,27 @@
++const HR = () => {
++  return (
++    <div className="px-4 py-6 sm:px-0">
++      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
++        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">HR & Payroll</h2>
++        <p className="text-gray-600 dark:text-gray-400 mb-6">
++          Manage employees, leaves, attendance, and payroll.
++        </p>
++
++        <div className="mb-6 flex space-x-4">
++          <button className="bg-primary-600 dark:bg-primary-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors shadow-sm">
++            Add Employee
++          </button>
++          <button className="bg-gray-600 dark:bg-gray-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors shadow-sm">
++            Generate Payroll
++          </button>
++        </div>
++
++        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
++          <p className="text-gray-500 dark:text-gray-400 text-sm">No employee records found.</p>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++export default HR
+diff --git a/frontend/src/pages/Inventory.tsx b/frontend/src/pages/Inventory.tsx
+new file mode 100644
+index 0000000..112d887
+--- /dev/null
++++ b/frontend/src/pages/Inventory.tsx
+@@ -0,0 +1,24 @@
++const Inventory = () => {
++  return (
++    <div className="px-4 py-6 sm:px-0">
++      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
++        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Inventory & Assets</h2>
++        <p className="text-gray-600 dark:text-gray-400 mb-6">
++          Manage stock items, assets, and low-stock alerts.
++        </p>
++
++        <div className="mb-6">
++          <button className="bg-primary-600 dark:bg-primary-700 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors shadow-sm">
++            Add Item
++          </button>
++        </div>
++
++        <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
++          <p className="text-gray-500 dark:text-gray-400 text-sm">No inventory items found.</p>
++        </div>
++      </div>
++    </div>
++  )
++}
++
++export default Inventory
+-- 
+2.43.0
+
