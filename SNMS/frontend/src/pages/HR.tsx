@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import api from '../services/api'
 
 interface Employee {
   id: number
@@ -39,16 +40,8 @@ const HR = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/employees', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setEmployees(data)
-      }
+      const response = await api.get('/employees')
+      setEmployees(response.data)
     } catch (error) {
       console.error('Error fetching employees:', error)
     } finally {
@@ -60,26 +53,14 @@ const HR = () => {
     e.preventDefault()
 
     try {
-      const url = editingEmployee
-        ? `http://localhost:8000/api/employees/${editingEmployee.id}`
-        : 'http://localhost:8000/api/employees'
-
-      const method = editingEmployee ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        fetchEmployees()
-        closeModal()
+      if (editingEmployee) {
+        await api.put(`/employees/${editingEmployee.id}`, formData)
+      } else {
+        await api.post('/employees', formData)
       }
+
+      fetchEmployees()
+      closeModal()
     } catch (error) {
       console.error('Error saving employee:', error)
     }
@@ -89,17 +70,8 @@ const HR = () => {
     if (!confirm('Are you sure you want to delete this employee?')) return
 
     try {
-      const response = await fetch(`http://localhost:8000/api/employees/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        fetchEmployees()
-      }
+      await api.delete(`/employees/${id}`)
+      fetchEmployees()
     } catch (error) {
       console.error('Error deleting employee:', error)
     }

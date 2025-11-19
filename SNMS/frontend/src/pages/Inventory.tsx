@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import api from '../services/api'
 
 interface InventoryItem {
   id: number
@@ -39,16 +40,8 @@ const Inventory = () => {
 
   const fetchItems = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/inventory', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setItems(data)
-      }
+      const response = await api.get('/inventory')
+      setItems(response.data)
     } catch (error) {
       console.error('Error fetching inventory:', error)
     } finally {
@@ -60,26 +53,14 @@ const Inventory = () => {
     e.preventDefault()
 
     try {
-      const url = editingItem
-        ? `http://localhost:8000/api/inventory/${editingItem.id}`
-        : 'http://localhost:8000/api/inventory'
-
-      const method = editingItem ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        fetchItems()
-        closeModal()
+      if (editingItem) {
+        await api.put(`/inventory/${editingItem.id}`, formData)
+      } else {
+        await api.post('/inventory', formData)
       }
+
+      fetchItems()
+      closeModal()
     } catch (error) {
       console.error('Error saving item:', error)
     }
@@ -89,17 +70,8 @@ const Inventory = () => {
     if (!confirm('Are you sure you want to delete this item?')) return
 
     try {
-      const response = await fetch(`http://localhost:8000/api/inventory/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        fetchItems()
-      }
+      await api.delete(`/inventory/${id}`)
+      fetchItems()
     } catch (error) {
       console.error('Error deleting item:', error)
     }

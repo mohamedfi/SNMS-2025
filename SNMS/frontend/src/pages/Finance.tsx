@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import api from '../services/api'
 
 interface Student {
   id: number
@@ -44,16 +45,8 @@ const Finance = () => {
 
   const fetchTransactions = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/transactions', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setTransactions(data)
-      }
+      const response = await api.get('/transactions')
+      setTransactions(response.data)
     } catch (error) {
       console.error('Error fetching transactions:', error)
     } finally {
@@ -63,16 +56,8 @@ const Finance = () => {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/students', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setStudents(data)
-      }
+      const response = await api.get('/students')
+      setStudents(response.data)
     } catch (error) {
       console.error('Error fetching students:', error)
     }
@@ -82,29 +67,19 @@ const Finance = () => {
     e.preventDefault()
 
     try {
-      const url = editingTransaction
-        ? `http://localhost:8000/api/transactions/${editingTransaction.id}`
-        : 'http://localhost:8000/api/transactions'
-
-      const method = editingTransaction ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          ...formData,
-          student_id: formData.student_id || null
-        })
-      })
-
-      if (response.ok) {
-        fetchTransactions()
-        closeModal()
+      const transactionData = {
+        ...formData,
+        student_id: formData.student_id || null
       }
+
+      if (editingTransaction) {
+        await api.put(`/transactions/${editingTransaction.id}`, transactionData)
+      } else {
+        await api.post('/transactions', transactionData)
+      }
+
+      fetchTransactions()
+      closeModal()
     } catch (error) {
       console.error('Error saving transaction:', error)
     }
@@ -114,17 +89,8 @@ const Finance = () => {
     if (!confirm('Are you sure you want to delete this transaction?')) return
 
     try {
-      const response = await fetch(`http://localhost:8000/api/transactions/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        fetchTransactions()
-      }
+      await api.delete(`/transactions/${id}`)
+      fetchTransactions()
     } catch (error) {
       console.error('Error deleting transaction:', error)
     }

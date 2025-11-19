@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import api from '../services/api'
 
 interface Student {
   id: number
@@ -53,16 +54,8 @@ const Evaluations = () => {
 
   const fetchEvaluations = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/evaluations', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setEvaluations(data)
-      }
+      const response = await api.get('/evaluations')
+      setEvaluations(response.data)
     } catch (error) {
       console.error('Error fetching evaluations:', error)
     } finally {
@@ -72,16 +65,8 @@ const Evaluations = () => {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/students', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setStudents(data)
-      }
+      const response = await api.get('/students')
+      setStudents(response.data)
     } catch (error) {
       console.error('Error fetching students:', error)
     }
@@ -89,16 +74,8 @@ const Evaluations = () => {
 
   const fetchTeachers = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/teachers', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setTeachers(data)
-      }
+      const response = await api.get('/teachers')
+      setTeachers(response.data)
     } catch (error) {
       console.error('Error fetching teachers:', error)
     }
@@ -108,26 +85,14 @@ const Evaluations = () => {
     e.preventDefault()
 
     try {
-      const url = editingEvaluation
-        ? `http://localhost:8000/api/evaluations/${editingEvaluation.id}`
-        : 'http://localhost:8000/api/evaluations'
-
-      const method = editingEvaluation ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        fetchEvaluations()
-        closeModal()
+      if (editingEvaluation) {
+        await api.put(`/evaluations/${editingEvaluation.id}`, formData)
+      } else {
+        await api.post('/evaluations', formData)
       }
+
+      fetchEvaluations()
+      closeModal()
     } catch (error) {
       console.error('Error saving evaluation:', error)
     }
@@ -137,17 +102,8 @@ const Evaluations = () => {
     if (!confirm('Are you sure you want to delete this evaluation?')) return
 
     try {
-      const response = await fetch(`http://localhost:8000/api/evaluations/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        fetchEvaluations()
-      }
+      await api.delete(`/evaluations/${id}`)
+      fetchEvaluations()
     } catch (error) {
       console.error('Error deleting evaluation:', error)
     }

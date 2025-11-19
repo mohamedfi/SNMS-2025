@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import api from '../services/api'
 
 interface Event {
   id: number
@@ -45,16 +46,8 @@ const Events = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/events', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setEvents(data)
-      }
+      const response = await api.get('/events')
+      setEvents(response.data)
     } catch (error) {
       console.error('Error fetching events:', error)
     } finally {
@@ -66,29 +59,19 @@ const Events = () => {
     e.preventDefault()
 
     try {
-      const url = editingEvent
-        ? `http://localhost:8000/api/events/${editingEvent.id}`
-        : 'http://localhost:8000/api/events'
-
-      const method = editingEvent ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          ...formData,
-          permission_required: formData.permission_required ? 1 : 0
-        })
-      })
-
-      if (response.ok) {
-        fetchEvents()
-        closeModal()
+      const eventData = {
+        ...formData,
+        permission_required: formData.permission_required ? 1 : 0
       }
+
+      if (editingEvent) {
+        await api.put(`/events/${editingEvent.id}`, eventData)
+      } else {
+        await api.post('/events', eventData)
+      }
+
+      fetchEvents()
+      closeModal()
     } catch (error) {
       console.error('Error saving event:', error)
     }
@@ -98,17 +81,8 @@ const Events = () => {
     if (!confirm('Are you sure you want to delete this event?')) return
 
     try {
-      const response = await fetch(`http://localhost:8000/api/events/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json'
-        }
-      })
-
-      if (response.ok) {
-        fetchEvents()
-      }
+      await api.delete(`/events/${id}`)
+      fetchEvents()
     } catch (error) {
       console.error('Error deleting event:', error)
     }
