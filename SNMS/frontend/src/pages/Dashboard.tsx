@@ -139,7 +139,7 @@ const Dashboard = () => {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pending Payments</dt>
                   <dd className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {loading ? '...' : `$${stats.pending_payments}`}
+                    {loading ? '...' : `EGP ${stats.pending_payments}`}
                   </dd>
                 </dl>
               </div>
