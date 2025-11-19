@@ -258,7 +258,7 @@ const Inventory = () => {
                         {item.minimum_quantity}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        AED {item.unit_price}
+                        EGP {item.unit_price}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                         {item.supplier}
@@ -362,7 +362,7 @@ const Inventory = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Unit Price (AED) *
+                      Unit Price (EGP) *
                     </label>
                     <input
                       type="number"

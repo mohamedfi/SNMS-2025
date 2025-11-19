@@ -234,7 +234,7 @@ const HR = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        AED {employee.salary.toLocaleString()}
+                        EGP {employee.salary.toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {new Date(employee.hire_date).toLocaleDateString()}
@@ -385,7 +385,7 @@ const HR = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Salary (AED) *
+                      Salary (EGP) *
                     </label>
                     <input
                       type="number"

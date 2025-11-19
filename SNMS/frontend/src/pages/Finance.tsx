@@ -219,7 +219,7 @@ const Finance = () => {
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
             <p className="text-sm text-green-600 dark:text-green-400 font-medium">Total Revenue</p>
             <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-              AED {calculateTotal().toLocaleString()}
+              EGP {calculateTotal().toLocaleString()}
             </p>
           </div>
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
@@ -277,7 +277,7 @@ const Finance = () => {
                         {transaction.transaction_type}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-white">
-                        AED {parseFloat(transaction.amount.toString()).toLocaleString()}
+                        EGP {parseFloat(transaction.amount.toString()).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentMethodColor(transaction.payment_method)}`}>
@@ -360,7 +360,7 @@ const Finance = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Amount (AED) *
+                      Amount (EGP) *
                     </label>
                     <input
                       type="number"

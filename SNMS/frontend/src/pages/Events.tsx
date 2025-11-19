@@ -252,7 +252,7 @@ const Events = () => {
                         {event.registered_count}/{event.capacity}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                        AED {event.fee}
+                        EGP {event.fee}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button
@@ -431,7 +431,7 @@ const Events = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Fee (AED)
+                      Fee (EGP)
                     </label>
                     <input
                       type="number"
