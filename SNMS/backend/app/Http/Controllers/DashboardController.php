@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\Attendance;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -17,8 +19,15 @@ class DashboardController extends Controller
             $totalStudents = Student::count();
             $totalTeachers = Teacher::count();
 
-            // Get today's attendance (you can implement this later)
-            $todayAttendance = 0;
+            // Calculate today's attendance percentage
+            $today = Carbon::today()->toDateString();
+            $todayPresentCount = Attendance::whereDate('date', $today)
+                ->where('status', 'present')
+                ->count();
+
+            $todayAttendance = $totalStudents > 0
+                ? round(($todayPresentCount / $totalStudents) * 100)
+                : 0;
 
             // Get pending payments (you can implement this later)
             $pendingPayments = 0;
