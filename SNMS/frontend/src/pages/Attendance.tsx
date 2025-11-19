@@ -1,9 +1,29 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
+import { X } from 'lucide-react'
 
 interface Student {
   id: number
-  name: string
+  first_name: string
+  last_name: string
+  date_of_birth: string
+  gender: 'male' | 'female'
+  student_id: string
+  enrollment_date: string
+  status: 'active' | 'inactive' | 'graduated'
+  parent_name: string
+  parent_phone: string
+  parent_email?: string
+  address: string
+  emergency_contact_name: string
+  emergency_contact_phone: string
+  emergency_contact_relation: string
+  medical_conditions?: string
+  allergies?: string
+  blood_type?: string
+  class_assigned?: string
+  notes?: string
+  created_at: string
 }
 
 interface Attendance {
@@ -23,7 +43,10 @@ const Attendance = () => {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
+  const [showStudentDetail, setShowStudentDetail] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [editingAttendance, setEditingAttendance] = useState<Attendance | null>(null)
+  const [validationError, setValidationError] = useState<string>('')
   const [formData, setFormData] = useState({
     student_id: '',
     date: new Date().toISOString().split('T')[0],
@@ -60,6 +83,8 @@ const Attendance = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setValidationError('')
+
     try {
       if (editingAttendance) {
         await api.put(`/attendances/${editingAttendance.id}`, formData)
@@ -73,7 +98,25 @@ const Attendance = () => {
       fetchAttendances()
     } catch (error: any) {
       console.error('Error saving attendance:', error)
-      alert(error.response?.data?.message || 'Failed to save attendance')
+      if (error.response?.data?.errors) {
+        const errors = Object.entries(error.response.data.errors)
+          .map(([field, messages]: [string, any]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('\n')
+        setValidationError(errors)
+      } else {
+        setValidationError(error.response?.data?.message || 'Failed to save attendance')
+      }
+    }
+  }
+
+  const handleViewStudent = async (studentId: number) => {
+    try {
+      const response = await api.get(`/students/${studentId}`)
+      setSelectedStudent(response.data)
+      setShowStudentDetail(true)
+    } catch (error) {
+      console.error('Error fetching student details:', error)
+      alert('Failed to load student information')
     }
   }
 
@@ -104,6 +147,7 @@ const Attendance = () => {
 
   const resetForm = () => {
     setEditingAttendance(null)
+    setValidationError('')
     setFormData({
       student_id: '',
       date: new Date().toISOString().split('T')[0],
@@ -167,8 +211,13 @@ const Attendance = () => {
               ) : (
                 attendances.map((attendance) => (
                   <tr key={attendance.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {attendance.student?.name || `Student #${attendance.student_id}`}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => handleViewStudent(attendance.student_id)}
+                        className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:underline font-medium"
+                      >
+                        {attendance.student ? `${attendance.student.first_name} ${attendance.student.last_name}` : `Student #${attendance.student_id}`}
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {new Date(attendance.date).toLocaleDateString()}
@@ -206,6 +255,16 @@ const Attendance = () => {
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                 {editingAttendance ? 'Edit Attendance' : 'Mark Attendance'}
               </h3>
+
+              {/* Validation Error Display */}
+              {validationError && (
+                <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                  <p className="text-sm text-red-800 dark:text-red-300 font-medium whitespace-pre-line">
+                    {validationError}
+                  </p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -214,11 +273,13 @@ const Attendance = () => {
                       required
                       value={formData.student_id}
                       onChange={(e) => setFormData({...formData, student_id: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="">Select Student</option>
                       {students.map((student) => (
-                        <option key={student.id} value={student.id}>{student.name}</option>
+                        <option key={student.id} value={student.id}>
+                          {student.first_name} {student.last_name} ({student.student_id})
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -290,6 +351,163 @@ const Attendance = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Student Detail Modal */}
+      {showStudentDetail && selectedStudent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {selectedStudent.first_name} {selectedStudent.last_name}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Student ID: {selectedStudent.student_id}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowStudentDetail(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Student Information Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Personal Information */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                    Personal Information
+                  </h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Date of Birth</label>
+                    <p className="text-gray-900 dark:text-white">{new Date(selectedStudent.date_of_birth).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Gender</label>
+                    <p className="text-gray-900 dark:text-white capitalize">{selectedStudent.gender}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Status</label>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      selectedStudent.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                      selectedStudent.status === 'inactive' ? 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400' :
+                      'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                    }`}>
+                      {selectedStudent.status}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Enrollment Date</label>
+                    <p className="text-gray-900 dark:text-white">{new Date(selectedStudent.enrollment_date).toLocaleDateString()}</p>
+                  </div>
+                  {selectedStudent.class_assigned && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Class</label>
+                      <p className="text-gray-900 dark:text-white">{selectedStudent.class_assigned}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Contact Information */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                    Parent/Guardian Contact
+                  </h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Parent Name</label>
+                    <p className="text-gray-900 dark:text-white">{selectedStudent.parent_name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Phone</label>
+                    <p className="text-gray-900 dark:text-white">{selectedStudent.parent_phone}</p>
+                  </div>
+                  {selectedStudent.parent_email && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
+                      <p className="text-gray-900 dark:text-white">{selectedStudent.parent_email}</p>
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Address</label>
+                    <p className="text-gray-900 dark:text-white">{selectedStudent.address}</p>
+                  </div>
+                </div>
+
+                {/* Emergency Contact */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                    Emergency Contact
+                  </h4>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Contact Name</label>
+                    <p className="text-gray-900 dark:text-white">{selectedStudent.emergency_contact_name}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Phone</label>
+                    <p className="text-gray-900 dark:text-white">{selectedStudent.emergency_contact_phone}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Relation</label>
+                    <p className="text-gray-900 dark:text-white">{selectedStudent.emergency_contact_relation}</p>
+                  </div>
+                </div>
+
+                {/* Medical Information */}
+                <div className="space-y-4">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                    Medical Information
+                  </h4>
+                  {selectedStudent.blood_type && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Blood Type</label>
+                      <p className="text-gray-900 dark:text-white">{selectedStudent.blood_type}</p>
+                    </div>
+                  )}
+                  {selectedStudent.allergies && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Allergies</label>
+                      <p className="text-gray-900 dark:text-white">{selectedStudent.allergies}</p>
+                    </div>
+                  )}
+                  {selectedStudent.medical_conditions && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">Medical Conditions</label>
+                      <p className="text-gray-900 dark:text-white">{selectedStudent.medical_conditions}</p>
+                    </div>
+                  )}
+                  {!selectedStudent.blood_type && !selectedStudent.allergies && !selectedStudent.medical_conditions && (
+                    <p className="text-gray-500 dark:text-gray-400 text-sm italic">No medical information available</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedStudent.notes && (
+                <div className="mt-6">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2 mb-3">
+                    Additional Notes
+                  </h4>
+                  <p className="text-gray-900 dark:text-white whitespace-pre-line">{selectedStudent.notes}</p>
+                </div>
+              )}
+
+              {/* Close Button */}
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowStudentDetail(false)}
+                  className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
