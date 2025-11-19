@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
@@ -19,6 +20,10 @@ class AttendanceController extends Controller
     {
         // Convert empty strings to null for optional time fields
         $data = $request->all();
+
+        // Debug logging
+        Log::info('Attendance Store - Raw Request Data:', $data);
+
         $data['check_in_time'] = $data['check_in_time'] ?? null;
         $data['check_out_time'] = $data['check_out_time'] ?? null;
         $data['notes'] = $data['notes'] ?? null;
@@ -33,6 +38,12 @@ class AttendanceController extends Controller
         if (isset($data['notes']) && $data['notes'] === '') {
             $data['notes'] = null;
         }
+
+        // Debug logging after conversion
+        Log::info('Attendance Store - After Conversion:', [
+            'check_in_time' => $data['check_in_time'],
+            'check_out_time' => $data['check_out_time']
+        ]);
 
         $validator = Validator::make($data, [
             'student_id' => 'required|exists:students,id',
@@ -67,6 +78,10 @@ class AttendanceController extends Controller
     {
         // Convert empty strings to null for optional time fields
         $data = $request->all();
+
+        // Debug logging
+        Log::info('Attendance Update - Raw Request Data:', $data);
+
         $data['check_in_time'] = $data['check_in_time'] ?? null;
         $data['check_out_time'] = $data['check_out_time'] ?? null;
         $data['notes'] = $data['notes'] ?? null;
@@ -81,6 +96,12 @@ class AttendanceController extends Controller
         if (isset($data['notes']) && $data['notes'] === '') {
             $data['notes'] = null;
         }
+
+        // Debug logging after conversion
+        Log::info('Attendance Update - After Conversion:', [
+            'check_in_time' => $data['check_in_time'],
+            'check_out_time' => $data['check_out_time']
+        ]);
 
         $validator = Validator::make($data, [
             'student_id' => 'sometimes|required|exists:students,id',

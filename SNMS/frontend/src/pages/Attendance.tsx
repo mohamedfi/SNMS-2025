@@ -94,6 +94,14 @@ const Attendance = () => {
         notes: formData.notes || null,
       }
 
+      // Debug logging
+      console.log('=== ATTENDANCE SUBMIT DEBUG ===')
+      console.log('Original formData:', formData)
+      console.log('Prepared submitData:', submitData)
+      console.log('check_in_time type:', typeof submitData.check_in_time, 'value:', submitData.check_in_time)
+      console.log('check_out_time type:', typeof submitData.check_out_time, 'value:', submitData.check_out_time)
+      console.log('===============================')
+
       if (editingAttendance) {
         await api.put(`/attendances/${editingAttendance.id}`, submitData)
         alert('Attendance updated successfully!')
