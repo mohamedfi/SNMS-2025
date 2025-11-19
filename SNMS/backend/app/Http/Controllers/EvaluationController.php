@@ -2,47 +2,86 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Evaluation;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 
 class EvaluationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $evaluations = Evaluation::with(['student', 'teacher'])->orderBy('evaluation_date', 'desc')->get();
+        return response()->json($evaluations);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'student_id' => 'required|exists:students,id',
+            'teacher_id' => 'required|exists:teachers,id',
+            'subject' => 'required|string|max:255',
+            'evaluation_date' => 'required|date',
+            'score' => 'nullable|integer|min:0|max:100',
+            'grade' => 'nullable|string|max:10',
+            'comments' => 'nullable|string',
+            'type' => 'nullable|in:quiz,test,assignment,project,final',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $evaluation = Evaluation::create($request->all());
+
+        return response()->json([
+            'message' => 'Evaluation created successfully',
+            'evaluation' => $evaluation->load(['student', 'teacher'])
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Evaluation $evaluation): JsonResponse
     {
-        //
+        return response()->json($evaluation->load(['student', 'teacher']));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Evaluation $evaluation): JsonResponse
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'student_id' => 'sometimes|required|exists:students,id',
+            'teacher_id' => 'sometimes|required|exists:teachers,id',
+            'subject' => 'sometimes|required|string|max:255',
+            'evaluation_date' => 'sometimes|required|date',
+            'score' => 'nullable|integer|min:0|max:100',
+            'grade' => 'nullable|string|max:10',
+            'comments' => 'nullable|string',
+            'type' => 'nullable|in:quiz,test,assignment,project,final',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $evaluation->update($request->all());
+
+        return response()->json([
+            'message' => 'Evaluation updated successfully',
+            'evaluation' => $evaluation->load(['student', 'teacher'])
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Evaluation $evaluation): JsonResponse
     {
-        //
+        $evaluation->delete();
+
+        return response()->json([
+            'message' => 'Evaluation deleted successfully'
+        ]);
     }
 }
