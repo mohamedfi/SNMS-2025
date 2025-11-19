@@ -17,7 +17,24 @@ class AttendanceController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        // Convert empty strings to null for optional time fields
+        $data = $request->all();
+        $data['check_in_time'] = $data['check_in_time'] ?? null;
+        $data['check_out_time'] = $data['check_out_time'] ?? null;
+        $data['notes'] = $data['notes'] ?? null;
+
+        // Convert empty strings to null
+        if (isset($data['check_in_time']) && $data['check_in_time'] === '') {
+            $data['check_in_time'] = null;
+        }
+        if (isset($data['check_out_time']) && $data['check_out_time'] === '') {
+            $data['check_out_time'] = null;
+        }
+        if (isset($data['notes']) && $data['notes'] === '') {
+            $data['notes'] = null;
+        }
+
+        $validator = Validator::make($data, [
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date',
             'status' => 'required|in:present,absent,late,excused',
@@ -33,7 +50,7 @@ class AttendanceController extends Controller
             ], 422);
         }
 
-        $attendance = Attendance::create($request->all());
+        $attendance = Attendance::create($data);
 
         return response()->json([
             'message' => 'Attendance recorded successfully',
@@ -48,7 +65,24 @@ class AttendanceController extends Controller
 
     public function update(Request $request, Attendance $attendance): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        // Convert empty strings to null for optional time fields
+        $data = $request->all();
+        $data['check_in_time'] = $data['check_in_time'] ?? null;
+        $data['check_out_time'] = $data['check_out_time'] ?? null;
+        $data['notes'] = $data['notes'] ?? null;
+
+        // Convert empty strings to null
+        if (isset($data['check_in_time']) && $data['check_in_time'] === '') {
+            $data['check_in_time'] = null;
+        }
+        if (isset($data['check_out_time']) && $data['check_out_time'] === '') {
+            $data['check_out_time'] = null;
+        }
+        if (isset($data['notes']) && $data['notes'] === '') {
+            $data['notes'] = null;
+        }
+
+        $validator = Validator::make($data, [
             'student_id' => 'sometimes|required|exists:students,id',
             'date' => 'sometimes|required|date',
             'status' => 'sometimes|required|in:present,absent,late,excused',
@@ -64,7 +98,7 @@ class AttendanceController extends Controller
             ], 422);
         }
 
-        $attendance->update($request->all());
+        $attendance->update($data);
 
         return response()->json([
             'message' => 'Attendance updated successfully',
