@@ -49,8 +49,8 @@ class AttendanceController extends Controller
             'student_id' => 'required|exists:students,id',
             'date' => 'required|date',
             'status' => 'required|in:present,absent,late,excused',
-            'check_in_time' => 'nullable|date_format:H:i',
-            'check_out_time' => 'nullable|date_format:H:i',
+            'check_in_time' => 'nullable|date_format:H:i:s',
+            'check_out_time' => 'nullable|date_format:H:i:s',
             'notes' => 'nullable|string',
         ]);
 
@@ -107,8 +107,8 @@ class AttendanceController extends Controller
             'student_id' => 'sometimes|required|exists:students,id',
             'date' => 'sometimes|required|date',
             'status' => 'sometimes|required|in:present,absent,late,excused',
-            'check_in_time' => 'nullable|date_format:H:i',
-            'check_out_time' => 'nullable|date_format:H:i',
+            'check_in_time' => 'nullable|date_format:H:i:s',
+            'check_out_time' => 'nullable|date_format:H:i:s',
             'notes' => 'nullable|string',
         ]);
 
