@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,6 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // First, update existing data to use new enum values
+        DB::statement("UPDATE events SET status = 'upcoming' WHERE status = 'scheduled'");
+
         Schema::table('events', function (Blueprint $table) {
             // Rename type to event_type
             $table->renameColumn('type', 'event_type');
@@ -23,10 +27,10 @@ return new class extends Migration
             $table->decimal('fee', 10, 2)->default(0)->after('registered_count');
             $table->boolean('permission_required')->default(false)->after('fee');
             $table->text('notes')->nullable()->after('permission_required');
-
-            // Change status enum values
-            $table->enum('status', ['upcoming', 'ongoing', 'completed', 'cancelled'])->default('upcoming')->change();
         });
+
+        // Change status enum values using raw SQL to avoid data truncation
+        DB::statement("ALTER TABLE events MODIFY COLUMN status ENUM('upcoming', 'ongoing', 'completed', 'cancelled') DEFAULT 'upcoming'");
     }
 
     /**
