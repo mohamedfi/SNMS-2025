@@ -1,8 +1,22 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 
+interface DashboardStats {
+  total_students: number
+  total_teachers: number
+  today_attendance: number
+  pending_payments: number
+}
+
 const Dashboard = () => {
   const [apiStatus, setApiStatus] = useState<string>('')
+  const [stats, setStats] = useState<DashboardStats>({
+    total_students: 0,
+    total_teachers: 0,
+    today_attendance: 0,
+    pending_payments: 0
+  })
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     // Test API connection
@@ -13,7 +27,24 @@ const Dashboard = () => {
       .catch((error) => {
         setApiStatus(`Error: ${error.message}`)
       })
+
+    // Fetch dashboard statistics
+    fetchDashboardStats()
   }, [])
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true)
+      const response = await api.get('/dashboard/stats')
+      if (response.data.success) {
+        setStats(response.data.data)
+      }
+    } catch (error: any) {
+      console.error('Error fetching dashboard stats:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="px-4 py-6 sm:px-0">
@@ -41,7 +72,9 @@ const Dashboard = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Students</dt>
-                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">0</dd>
+                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {loading ? '...' : stats.total_students}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -61,7 +94,9 @@ const Dashboard = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Teachers</dt>
-                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">0</dd>
+                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {loading ? '...' : stats.total_teachers}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -81,7 +116,9 @@ const Dashboard = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Today's Attendance</dt>
-                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">0%</dd>
+                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {loading ? '...' : `${stats.today_attendance}%`}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -101,7 +138,9 @@ const Dashboard = () => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Pending Payments</dt>
-                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">$0</dd>
+                  <dd className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {loading ? '...' : `$${stats.pending_payments}`}
+                  </dd>
                 </dl>
               </div>
             </div>

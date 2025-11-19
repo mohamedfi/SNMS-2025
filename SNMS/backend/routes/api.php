@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 
 // Handle OPTIONS requests for CORS preflight
 Route::options('{any}', function () {
@@ -35,6 +36,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+
+    // Dashboard statistics
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 
     // Students API routes (Admin and Teachers can manage)
     Route::apiResource('students', StudentController::class);
