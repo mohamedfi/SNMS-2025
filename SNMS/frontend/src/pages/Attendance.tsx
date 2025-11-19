@@ -86,11 +86,19 @@ const Attendance = () => {
     setValidationError('')
 
     try {
+      // Prepare data, converting empty strings to null for optional time fields
+      const submitData = {
+        ...formData,
+        check_in_time: formData.check_in_time || null,
+        check_out_time: formData.check_out_time || null,
+        notes: formData.notes || null,
+      }
+
       if (editingAttendance) {
-        await api.put(`/attendances/${editingAttendance.id}`, formData)
+        await api.put(`/attendances/${editingAttendance.id}`, submitData)
         alert('Attendance updated successfully!')
       } else {
-        await api.post('/attendances', formData)
+        await api.post('/attendances', submitData)
         alert('Attendance recorded successfully!')
       }
       setShowModal(false)
