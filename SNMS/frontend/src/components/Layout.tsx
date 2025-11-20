@@ -15,7 +15,8 @@ import {
   Package,
   Menu,
   X,
-  LogOut
+  LogOut,
+  Settings
 } from 'lucide-react'
 
 const Layout = () => {
@@ -42,7 +43,8 @@ const Layout = () => {
     { path: '/events', label: 'Events', icon: Calendar },
     { path: '/hr', label: 'HR', icon: Briefcase },
     { path: '/finance', label: 'Finance', icon: DollarSign },
-    { path: '/inventory', label: 'Inventory', icon: Package }
+    { path: '/inventory', label: 'Inventory', icon: Package },
+    { path: '/settings', label: 'Settings', icon: Settings }
   ]
 
   return (

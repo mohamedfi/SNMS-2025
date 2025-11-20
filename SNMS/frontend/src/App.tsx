@@ -13,6 +13,7 @@ import Events from './pages/Events'
 import HR from './pages/HR'
 import Finance from './pages/Finance'
 import Inventory from './pages/Inventory'
+import SettingsPage from './pages/SettingsPage'
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -61,6 +62,7 @@ function App() {
               <Route path="hr" element={<HR />} />
               <Route path="finance" element={<Finance />} />
               <Route path="inventory" element={<Inventory />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
           </Routes>
         </Router>

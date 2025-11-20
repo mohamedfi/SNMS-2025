@@ -1,0 +1,349 @@
+import { useState, useEffect } from 'react'
+import api from '../services/api'
+import { Shield, Users as UsersIcon, Key, CheckCircle, XCircle } from 'lucide-react'
+
+interface Role {
+  id: number
+  name: string
+  display_name: string
+  description: string
+  permissions: Permission[]
+}
+
+interface Permission {
+  id: number
+  name: string
+  display_name: string
+  module: string
+  description?: string
+}
+
+interface User {
+  id: number
+  name: string
+  email: string
+  roles: Role[]
+}
+
+const SettingsPage = () => {
+  const [users, setUsers] = useState<User[]>([])
+  const [roles, setRoles] = useState<Role[]>([])
+  const [permissions, setPermissions] = useState<Record<string, Permission[]>>({})
+  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<'users' | 'roles'>('users')
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      const [usersRes, rolesRes, permissionsRes] = await Promise.all([
+        api.get('/settings/users'),
+        api.get('/roles'),
+        api.get('/permissions')
+      ])
+      setUsers(usersRes.data)
+      setRoles(rolesRes.data)
+      setPermissions(permissionsRes.data)
+    } catch (error) {
+      console.error('Error fetching settings data:', error)
+      alert('Failed to load settings data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAssignRole = async (userId: number, roleId: number) => {
+    try {
+      await api.post('/roles/assign', { user_id: userId, role_id: roleId })
+      alert('Role assigned successfully!')
+      fetchData()
+    } catch (error) {
+      console.error('Error assigning role:', error)
+      alert('Failed to assign role')
+    }
+  }
+
+  const handleRemoveRole = async (userId: number, roleId: number) => {
+    try {
+      await api.post('/roles/remove', { user_id: userId, role_id: roleId })
+      alert('Role removed successfully!')
+      fetchData()
+    } catch (error) {
+      console.error('Error removing role:', error)
+      alert('Failed to remove role')
+    }
+  }
+
+  const handleUpdateRolePermissions = async (roleId: number, permissionIds: number[]) => {
+    try {
+      await api.put(`/roles/${roleId}/permissions`, { permissions: permissionIds })
+      alert('Role permissions updated successfully!')
+      fetchData()
+      setSelectedRole(null)
+    } catch (error) {
+      console.error('Error updating role permissions:', error)
+      alert('Failed to update role permissions')
+    }
+  }
+
+  if (loading) {
+    return <div className="px-4 py-6">Loading...</div>
+  }
+
+  return (
+    <div className="px-4 py-6">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Settings & Access Control
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          Manage user roles and permissions
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
+        <nav className="flex space-x-8">
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`${
+              activeTab === 'users'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            } flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+          >
+            <UsersIcon className="h-5 w-5" />
+            User Management
+          </button>
+          <button
+            onClick={() => setActiveTab('roles')}
+            className={`${
+              activeTab === 'roles'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            } flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+          >
+            <Shield className="h-5 w-5" />
+            Roles & Permissions
+          </button>
+        </nav>
+      </div>
+
+      {/* Users Tab */}
+      {activeTab === 'users' && (
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Current Roles
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{user.name}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{user.email}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-2">
+                      {user.roles.map((role) => (
+                        <span
+                          key={role.id}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200"
+                        >
+                          {role.display_name}
+                          <button
+                            onClick={() => handleRemoveRole(user.id, role.id)}
+                            className="ml-1 hover:text-red-600"
+                          >
+                            <XCircle className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                      {user.roles.length === 0 && (
+                        <span className="text-sm text-gray-500 dark:text-gray-400">No roles assigned</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <button
+                      onClick={() => setSelectedUser(user)}
+                      className="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300 font-medium"
+                    >
+                      Manage Roles
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Roles Tab */}
+      {activeTab === 'roles' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {roles.map((role) => (
+            <div
+              key={role.id}
+              className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-6 w-6 text-primary-500" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{role.display_name}</h3>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{role.description}</p>
+              <div className="mb-4">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                  {role.permissions.length} Permissions
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {role.permissions.slice(0, 3).map((perm) => (
+                    <span
+                      key={perm.id}
+                      className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                    >
+                      {perm.module}
+                    </span>
+                  ))}
+                  {role.permissions.length > 3 && (
+                    <span className="text-xs text-gray-500">+{role.permissions.length - 3} more</span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedRole(role)}
+                className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+              >
+                Edit Permissions
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Assign Role Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Manage Roles for {selectedUser.name}
+            </h3>
+            <div className="space-y-2">
+              {roles.map((role) => {
+                const hasRole = selectedUser.roles.some(r => r.id === role.id)
+                return (
+                  <div
+                    key={role.id}
+                    className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{role.display_name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{role.description}</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (hasRole) {
+                          handleRemoveRole(selectedUser.id, role.id)
+                        } else {
+                          handleAssignRole(selectedUser.id, role.id)
+                        }
+                        setSelectedUser(null)
+                      }}
+                      className={`px-3 py-1 rounded text-sm font-medium ${
+                        hasRole
+                          ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-200'
+                          : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900 dark:text-green-200'
+                      }`}
+                    >
+                      {hasRole ? 'Remove' : 'Assign'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+            <button
+              onClick={() => setSelectedUser(null)}
+              className="mt-4 w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Role Permissions Modal */}
+      {selectedRole && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full p-6 my-8">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Edit Permissions for {selectedRole.display_name}
+            </h3>
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {Object.entries(permissions).map(([module, modulePerms]) => (
+                <div key={module} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2 capitalize">{module}</h4>
+                  <div className="space-y-2">
+                    {modulePerms.map((perm) => {
+                      const hasPermission = selectedRole.permissions.some(p => p.id === perm.id)
+                      return (
+                        <label key={perm.id} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={hasPermission}
+                            onChange={(e) => {
+                              const newPermissions = e.target.checked
+                                ? [...selectedRole.permissions, perm]
+                                : selectedRole.permissions.filter(p => p.id !== perm.id)
+                              setSelectedRole({ ...selectedRole, permissions: newPermissions })
+                            }}
+                            className="rounded text-primary-600 focus:ring-primary-500"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{perm.display_name}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={() => handleUpdateRolePermissions(selectedRole.id, selectedRole.permissions.map(p => p.id))}
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+              >
+                Save Changes
+              </button>
+              <button
+                onClick={() => setSelectedRole(null)}
+                className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default SettingsPage
