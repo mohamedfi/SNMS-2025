@@ -13,6 +13,8 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingsController;
 
 // Handle OPTIONS requests for CORS preflight
 Route::options('{any}', function () {
@@ -76,4 +78,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Inventory API routes
     Route::apiResource('inventory', InventoryController::class);
+
+    // Roles and Permissions routes
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::get('/permissions', [RoleController::class, 'permissions']);
+    Route::post('/roles/assign', [RoleController::class, 'assignRole']);
+    Route::post('/roles/remove', [RoleController::class, 'removeRole']);
+    Route::put('/roles/{role}/permissions', [RoleController::class, 'updateRolePermissions']);
+    Route::get('/users/{user}/roles', [RoleController::class, 'getUserRoles']);
+
+    // Settings routes
+    Route::get('/settings/users', [SettingsController::class, 'users']);
+    Route::get('/settings/my-permissions', [SettingsController::class, 'myPermissions']);
 });
