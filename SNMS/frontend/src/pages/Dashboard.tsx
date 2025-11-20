@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface DashboardStats {
   total_students: number
@@ -17,6 +18,9 @@ const Dashboard = () => {
     pending_payments: 0
   })
   const [loading, setLoading] = useState<boolean>(true)
+  const [attendanceChartData, setAttendanceChartData] = useState([])
+  const [studentStatusChartData, setStudentStatusChartData] = useState([])
+  const [teacherTypeChartData, setTeacherTypeChartData] = useState([])
 
   useEffect(() => {
     // Test API connection
@@ -30,6 +34,9 @@ const Dashboard = () => {
 
     // Fetch dashboard statistics
     fetchDashboardStats()
+    fetchAttendanceChart()
+    fetchStudentStatusChart()
+    fetchTeacherTypeChart()
   }, [])
 
   const fetchDashboardStats = async () => {
@@ -43,6 +50,39 @@ const Dashboard = () => {
       console.error('Error fetching dashboard stats:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAttendanceChart = async () => {
+    try {
+      const response = await api.get('/dashboard/attendance-chart')
+      if (response.data.success) {
+        setAttendanceChartData(response.data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching attendance chart:', error)
+    }
+  }
+
+  const fetchStudentStatusChart = async () => {
+    try {
+      const response = await api.get('/dashboard/student-status-chart')
+      if (response.data.success) {
+        setStudentStatusChartData(response.data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching student status chart:', error)
+    }
+  }
+
+  const fetchTeacherTypeChart = async () => {
+    try {
+      const response = await api.get('/dashboard/teacher-type-chart')
+      if (response.data.success) {
+        setTeacherTypeChartData(response.data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching teacher type chart:', error)
     }
   }
 
@@ -146,6 +186,65 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Attendance Trend Chart */}
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Attendance Trend (Last 7 Days)</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={attendanceChartData}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-gray-300 dark:stroke-gray-600" />
+              <XAxis dataKey="date" className="text-gray-600 dark:text-gray-400" />
+              <YAxis className="text-gray-600 dark:text-gray-400" />
+              <Tooltip contentStyle={{backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff'}} />
+              <Legend />
+              <Line type="monotone" dataKey="present" stroke="#10b981" strokeWidth={2} name="Present" />
+              <Line type="monotone" dataKey="absent" stroke="#ef4444" strokeWidth={2} name="Absent" />
+              <Line type="monotone" dataKey="late" stroke="#f59e0b" strokeWidth={2} name="Late" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Student Status Distribution */}
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Student Status Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={studentStatusChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {studentStatusChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={['#10b981', '#ef4444', '#3b82f6'][index % 3]} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff'}} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Teacher Distribution Chart */}
+      <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Teacher Distribution by Employment Type</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={teacherTypeChartData}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-300 dark:stroke-gray-600" />
+            <XAxis dataKey="type" className="text-gray-600 dark:text-gray-400" />
+            <YAxis className="text-gray-600 dark:text-gray-400" />
+            <Tooltip contentStyle={{backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff'}} />
+            <Legend />
+            <Bar dataKey="count" fill="#6366f1" name="Teachers" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
 
       {/* API Status */}

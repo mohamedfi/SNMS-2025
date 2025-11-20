@@ -46,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard statistics
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/attendance-chart', [DashboardController::class, 'attendanceChart']);
+    Route::get('/dashboard/student-status-chart', [DashboardController::class, 'studentStatusChart']);
+    Route::get('/dashboard/teacher-type-chart', [DashboardController::class, 'teacherTypeChart']);
 
     // Students API routes (Admin and Teachers can manage)
     Route::apiResource('students', StudentController::class);
