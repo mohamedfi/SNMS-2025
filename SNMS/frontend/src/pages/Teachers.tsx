@@ -24,6 +24,7 @@ interface Teacher {
   salary?: number
   class_assigned?: string
   notes?: string
+  photo_url?: string
   created_at: string
 }
 
@@ -32,6 +33,8 @@ const Teachers = () => {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -75,18 +78,64 @@ const Teachers = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const payload = {
-        ...formData,
-        salary: formData.salary ? parseFloat(formData.salary) : null,
+      let response
+
+      if (photoFile) {
+        // Use FormData for file upload
+        const formDataToSend = new FormData()
+        formDataToSend.append('first_name', formData.first_name)
+        formDataToSend.append('last_name', formData.last_name)
+        formDataToSend.append('email', formData.email)
+        formDataToSend.append('phone', formData.phone)
+        formDataToSend.append('employee_id', formData.employee_id)
+        formDataToSend.append('date_of_birth', formData.date_of_birth)
+        formDataToSend.append('gender', formData.gender)
+        formDataToSend.append('hire_date', formData.hire_date)
+        formDataToSend.append('status', formData.status)
+        formDataToSend.append('qualification', formData.qualification)
+        formDataToSend.append('years_of_experience', formData.years_of_experience.toString())
+        formDataToSend.append('specialization', formData.specialization)
+        formDataToSend.append('certifications', formData.certifications)
+        formDataToSend.append('address', formData.address)
+        formDataToSend.append('emergency_contact_name', formData.emergency_contact_name)
+        formDataToSend.append('emergency_contact_phone', formData.emergency_contact_phone)
+        formDataToSend.append('emergency_contact_relation', formData.emergency_contact_relation)
+        formDataToSend.append('employment_type', formData.employment_type)
+        if (formData.salary) {
+          formDataToSend.append('salary', formData.salary)
+        }
+        formDataToSend.append('class_assigned', formData.class_assigned)
+        formDataToSend.append('notes', formData.notes)
+        formDataToSend.append('photo', photoFile)
+
+        if (editingTeacher) {
+          response = await api.put(`/teachers/${editingTeacher.id}`, formDataToSend, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          })
+        } else {
+          response = await api.post('/teachers', formDataToSend, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          })
+        }
+      } else {
+        // Use JSON for regular data
+        const payload = {
+          ...formData,
+          salary: formData.salary ? parseFloat(formData.salary) : null,
+        }
+
+        if (editingTeacher) {
+          response = await api.put(`/teachers/${editingTeacher.id}`, payload)
+        } else {
+          response = await api.post('/teachers', payload)
+        }
       }
 
-      if (editingTeacher) {
-        await api.put(`/teachers/${editingTeacher.id}`, payload)
-        alert('Teacher updated successfully!')
-      } else {
-        await api.post('/teachers', payload)
-        alert('Teacher created successfully!')
-      }
+      alert(editingTeacher ? 'Teacher updated successfully!' : 'Teacher created successfully!')
       setShowModal(false)
       resetForm()
       fetchTeachers()
@@ -103,6 +152,8 @@ const Teachers = () => {
 
   const handleEdit = (teacher: Teacher) => {
     setEditingTeacher(teacher)
+    setPhotoFile(null)
+    setPhotoPreview(null)
     setFormData({
       first_name: teacher.first_name,
       last_name: teacher.last_name,
@@ -142,8 +193,23 @@ const Teachers = () => {
     }
   }
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setPhotoFile(file)
+      // Create preview URL
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const resetForm = () => {
     setEditingTeacher(null)
+    setPhotoFile(null)
+    setPhotoPreview(null)
     setFormData({
       first_name: '',
       last_name: '',
@@ -240,7 +306,22 @@ const Teachers = () => {
                       {teacher.employee_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {teacher.first_name} {teacher.last_name}
+                      <div className="flex items-center space-x-3">
+                        {teacher.photo_url ? (
+                          <img
+                            src={teacher.photo_url}
+                            alt={`${teacher.first_name} ${teacher.last_name}`}
+                            className="w-10 h-10 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                            <span className="text-gray-600 dark:text-gray-300 font-semibold">
+                              {teacher.first_name.charAt(0)}{teacher.last_name.charAt(0)}
+                            </span>
+                          </div>
+                        )}
+                        <span>{teacher.first_name} {teacher.last_name}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {teacher.email}
@@ -579,6 +660,34 @@ const Teachers = () => {
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                   />
+                </div>
+
+                {/* Photo Upload */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Photo
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    {(photoPreview || editingTeacher?.photo_url) && (
+                      <img
+                        src={photoPreview || editingTeacher?.photo_url}
+                        alt="Teacher"
+                        className="w-24 h-24 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                      />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="block w-full text-sm text-gray-500 dark:text-gray-400
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-primary-50 file:text-primary-700
+                        hover:file:bg-primary-100
+                        dark:file:bg-primary-900 dark:file:text-primary-300"
+                    />
+                  </div>
                 </div>
 
                 {/* Form Actions */}

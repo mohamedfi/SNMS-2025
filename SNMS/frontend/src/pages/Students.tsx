@@ -22,6 +22,7 @@ interface Student {
   blood_type?: string
   class_assigned?: string
   notes?: string
+  photo_url?: string
   created_at: string
 }
 
@@ -30,6 +31,8 @@ const Students = () => {
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -71,13 +74,39 @@ const Students = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      if (editingStudent) {
-        await api.put(`/students/${editingStudent.id}`, formData)
-        alert('Student updated successfully!')
+      let response
+
+      if (photoFile) {
+        // Use FormData when photo is present
+        const data = new FormData()
+        Object.entries(formData).forEach(([key, value]) => {
+          data.append(key, value as string)
+        })
+        data.append('photo', photoFile)
+
+        if (editingStudent) {
+          response = await api.put(`/students/${editingStudent.id}`, data, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          })
+        } else {
+          response = await api.post('/students', data, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          })
+        }
       } else {
-        await api.post('/students', formData)
-        alert('Student created successfully!')
+        // Use JSON when no photo
+        if (editingStudent) {
+          response = await api.put(`/students/${editingStudent.id}`, formData)
+        } else {
+          response = await api.post('/students', formData)
+        }
       }
+
+      alert(editingStudent ? 'Student updated successfully!' : 'Student created successfully!')
       setShowModal(false)
       resetForm()
       fetchStudents()
@@ -94,6 +123,8 @@ const Students = () => {
 
   const handleEdit = (student: Student) => {
     setEditingStudent(student)
+    setPhotoFile(null)
+    setPhotoPreview(null)
     setFormData({
       first_name: student.first_name,
       last_name: student.last_name,
@@ -131,8 +162,22 @@ const Students = () => {
     }
   }
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setPhotoFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const resetForm = () => {
     setEditingStudent(null)
+    setPhotoFile(null)
+    setPhotoPreview(null)
     setFormData({
       first_name: '',
       last_name: '',
@@ -227,7 +272,20 @@ const Students = () => {
                       {student.student_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {student.first_name} {student.last_name}
+                      <div className="flex items-center space-x-3">
+                        {student.photo_url ? (
+                          <img
+                            src={student.photo_url}
+                            alt={`${student.first_name} ${student.last_name}`}
+                            className="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-semibold">
+                            {student.first_name.charAt(0)}{student.last_name.charAt(0)}
+                          </div>
+                        )}
+                        <span>{student.first_name} {student.last_name}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 capitalize">
                       {student.gender}
@@ -538,6 +596,34 @@ const Students = () => {
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
                   />
+                </div>
+
+                {/* Photo Upload */}
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Photo
+                  </label>
+                  <div className="flex items-center space-x-4">
+                    {(photoPreview || editingStudent?.photo_url) && (
+                      <img
+                        src={photoPreview || editingStudent?.photo_url}
+                        alt="Student"
+                        className="w-24 h-24 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600"
+                      />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="block w-full text-sm text-gray-500 dark:text-gray-400
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-primary-50 file:text-primary-700
+                        hover:file:bg-primary-100
+                        dark:file:bg-primary-900 dark:file:text-primary-300"
+                    />
+                  </div>
                 </div>
 
                 {/* Form Actions */}
