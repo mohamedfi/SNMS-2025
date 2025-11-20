@@ -6,6 +6,7 @@ use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class TeacherController extends Controller
 {
@@ -45,6 +46,7 @@ class TeacherController extends Controller
             'salary' => 'nullable|numeric|min:0',
             'class_assigned' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -54,7 +56,16 @@ class TeacherController extends Controller
             ], 422);
         }
 
-        $teacher = Teacher::create($request->all());
+        $data = $request->except('photo');
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            $photoPath = $photo->store('teachers', 'public');
+            $data['photo_url'] = Storage::url($photoPath);
+        }
+
+        $teacher = Teacher::create($data);
 
         return response()->json([
             'message' => 'Teacher created successfully',
@@ -97,6 +108,7 @@ class TeacherController extends Controller
             'salary' => 'nullable|numeric|min:0',
             'class_assigned' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -106,7 +118,22 @@ class TeacherController extends Controller
             ], 422);
         }
 
-        $teacher->update($request->all());
+        $data = $request->except('photo');
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($teacher->photo_url) {
+                $oldPath = str_replace('/storage', 'public', $teacher->photo_url);
+                Storage::delete($oldPath);
+            }
+
+            $photo = $request->file('photo');
+            $photoPath = $photo->store('teachers', 'public');
+            $data['photo_url'] = Storage::url($photoPath);
+        }
+
+        $teacher->update($data);
 
         return response()->json([
             'message' => 'Teacher updated successfully',

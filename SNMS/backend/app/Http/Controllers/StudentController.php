@@ -6,6 +6,7 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
@@ -43,6 +44,7 @@ class StudentController extends Controller
             'blood_type' => 'nullable|string|max:10',
             'class_assigned' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -52,7 +54,16 @@ class StudentController extends Controller
             ], 422);
         }
 
-        $student = Student::create($request->all());
+        $data = $request->except('photo');
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            $photo = $request->file('photo');
+            $photoPath = $photo->store('students', 'public');
+            $data['photo_url'] = Storage::url($photoPath);
+        }
+
+        $student = Student::create($data);
 
         return response()->json([
             'message' => 'Student created successfully',
@@ -93,6 +104,7 @@ class StudentController extends Controller
             'blood_type' => 'nullable|string|max:10',
             'class_assigned' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -102,7 +114,22 @@ class StudentController extends Controller
             ], 422);
         }
 
-        $student->update($request->all());
+        $data = $request->except('photo');
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($student->photo_url) {
+                $oldPath = str_replace('/storage', 'public', $student->photo_url);
+                Storage::delete($oldPath);
+            }
+
+            $photo = $request->file('photo');
+            $photoPath = $photo->store('students', 'public');
+            $data['photo_url'] = Storage::url($photoPath);
+        }
+
+        $student->update($data);
 
         return response()->json([
             'message' => 'Student updated successfully',
