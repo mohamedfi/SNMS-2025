@@ -109,7 +109,9 @@ const Teachers = () => {
         formDataToSend.append('photo', photoFile)
 
         if (editingTeacher) {
-          response = await api.put(`/teachers/${editingTeacher.id}`, formDataToSend, {
+          // For updates with files, use POST with _method=PUT
+          formDataToSend.append('_method', 'PUT')
+          response = await api.post(`/teachers/${editingTeacher.id}`, formDataToSend, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },

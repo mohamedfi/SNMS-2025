@@ -85,7 +85,9 @@ const Students = () => {
         data.append('photo', photoFile)
 
         if (editingStudent) {
-          response = await api.put(`/students/${editingStudent.id}`, data, {
+          // For updates with files, use POST with _method=PUT
+          data.append('_method', 'PUT')
+          response = await api.post(`/students/${editingStudent.id}`, data, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
