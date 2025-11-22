@@ -16,11 +16,6 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingsController;
 
-// Handle OPTIONS requests for CORS preflight
-Route::options('{any}', function () {
-    return response('', 200);
-})->where('any', '.*');
-
 // Public API routes
 Route::get('/', function () {
     return response()->json(['Laravel' => app()->version()]);
