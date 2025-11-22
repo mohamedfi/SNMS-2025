@@ -62,7 +62,7 @@ class TeacherController extends Controller
         if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
             $photoPath = $photo->store('teachers', 'public');
-            $data['photo_url'] = Storage::url($photoPath);
+            $data['photo_url'] = url(Storage::url($photoPath));
         }
 
         $teacher = Teacher::create($data);
@@ -124,13 +124,14 @@ class TeacherController extends Controller
         if ($request->hasFile('photo')) {
             // Delete old photo if exists
             if ($teacher->photo_url) {
-                $oldPath = str_replace('/storage', 'public', $teacher->photo_url);
+                // Extract path from URL (remove domain if present)
+                $oldPath = str_replace([url('/storage'), '/storage'], ['public', 'public'], $teacher->photo_url);
                 Storage::delete($oldPath);
             }
 
             $photo = $request->file('photo');
             $photoPath = $photo->store('teachers', 'public');
-            $data['photo_url'] = Storage::url($photoPath);
+            $data['photo_url'] = url(Storage::url($photoPath));
         }
 
         $teacher->update($data);
