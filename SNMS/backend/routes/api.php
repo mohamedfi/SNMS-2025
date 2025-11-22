@@ -86,4 +86,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Settings routes
     Route::get('/settings/users', [SettingsController::class, 'users']);
     Route::get('/settings/my-permissions', [SettingsController::class, 'myPermissions']);
+    Route::get('/settings/teachers', [SettingsController::class, 'getTeachers']);
+    Route::get('/settings/students', [SettingsController::class, 'getStudents']);
+    Route::get('/settings/employees', [SettingsController::class, 'getEmployees']);
+    Route::post('/settings/users', [SettingsController::class, 'createUser']);
 });

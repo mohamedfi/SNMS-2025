@@ -25,6 +25,26 @@ interface User {
   roles: Role[]
 }
 
+interface Teacher {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+}
+
+interface Student {
+  id: number
+  first_name: string
+  last_name: string
+}
+
+interface Employee {
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+}
+
 const SettingsPage = () => {
   const [users, setUsers] = useState<User[]>([])
   const [roles, setRoles] = useState<Role[]>([])
@@ -40,6 +60,19 @@ const SettingsPage = () => {
     description: '',
     permissions: [] as number[]
   })
+  const [showCreateUser, setShowCreateUser] = useState(false)
+  const [newUser, setNewUser] = useState({
+    role: 'admin' as 'admin' | 'teacher' | 'parent' | 'other',
+    username: '',
+    email: '',
+    password: '',
+    teacher_id: null as number | null,
+    student_id: null as number | null,
+    employee_id: null as number | null
+  })
+  const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [students, setStudents] = useState<Student[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
 
   useEffect(() => {
     fetchData()
@@ -116,6 +149,85 @@ const SettingsPage = () => {
     }
   }
 
+  const fetchTeachers = async () => {
+    try {
+      const response = await api.get('/settings/teachers')
+      setTeachers(response.data)
+    } catch (error) {
+      console.error('Error fetching teachers:', error)
+    }
+  }
+
+  const fetchStudents = async () => {
+    try {
+      const response = await api.get('/settings/students')
+      setStudents(response.data)
+    } catch (error) {
+      console.error('Error fetching students:', error)
+    }
+  }
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await api.get('/settings/employees')
+      setEmployees(response.data)
+    } catch (error) {
+      console.error('Error fetching employees:', error)
+    }
+  }
+
+  const handleRoleChange = (role: 'admin' | 'teacher' | 'parent' | 'other') => {
+    setNewUser({ ...newUser, role, teacher_id: null, student_id: null, employee_id: null })
+
+    if (role === 'teacher') {
+      fetchTeachers()
+    } else if (role === 'parent') {
+      fetchStudents()
+    } else if (role === 'admin') {
+      fetchEmployees()
+    }
+  }
+
+  const handleCreateUser = async () => {
+    if (!newUser.username || !newUser.email || !newUser.password) {
+      alert('Please fill in all required fields')
+      return
+    }
+
+    // Validate entity selection based on role
+    if (newUser.role === 'teacher' && !newUser.teacher_id) {
+      alert('Please select a teacher')
+      return
+    }
+    if (newUser.role === 'parent' && !newUser.student_id) {
+      alert('Please select a student')
+      return
+    }
+    if (newUser.role === 'admin' && !newUser.employee_id) {
+      alert('Please select an employee')
+      return
+    }
+
+    try {
+      await api.post('/settings/users', newUser)
+      alert('User created successfully!')
+      setShowCreateUser(false)
+      setNewUser({
+        role: 'admin',
+        username: '',
+        email: '',
+        password: '',
+        teacher_id: null,
+        student_id: null,
+        employee_id: null
+      })
+      fetchData()
+    } catch (error: any) {
+      console.error('Error creating user:', error)
+      alert(error.response?.data?.message || 'Failed to create user')
+    }
+  }
+
   if (loading) {
     return <div className="px-4 py-6">Loading...</div>
   }
@@ -161,8 +273,20 @@ const SettingsPage = () => {
 
       {/* Users Tab */}
       {activeTab === 'users' && (
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <div>
+          {/* Create New User Button */}
+          <div className="mb-6">
+            <button
+              onClick={() => setShowCreateUser(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+            >
+              <Plus className="h-5 w-5" />
+              Create New User
+            </button>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -218,6 +342,7 @@ const SettingsPage = () => {
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       )}
 
@@ -467,6 +592,165 @@ const SettingsPage = () => {
               </button>
               <button
                 onClick={() => setSelectedRole(null)}
+                className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6 my-8">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Create New User
+            </h3>
+            <div className="space-y-4">
+              {/* Role Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select Role
+                </label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => handleRoleChange(e.target.value as 'admin' | 'teacher' | 'parent' | 'other')}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="parent">Parent</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/* Conditional Dropdown based on Role */}
+              {newUser.role === 'teacher' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select Teacher
+                  </label>
+                  <select
+                    value={newUser.teacher_id || ''}
+                    onChange={(e) => setNewUser({ ...newUser, teacher_id: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select a teacher</option>
+                    {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.first_name} {teacher.last_name} ({teacher.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {newUser.role === 'parent' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select Student (Child)
+                  </label>
+                  <select
+                    value={newUser.student_id || ''}
+                    onChange={(e) => setNewUser({ ...newUser, student_id: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select a student</option>
+                    {students.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.first_name} {student.last_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {newUser.role === 'admin' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Select Employee
+                  </label>
+                  <select
+                    value={newUser.employee_id || ''}
+                    onChange={(e) => setNewUser({ ...newUser, employee_id: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select an employee</option>
+                    {employees.map((employee) => (
+                      <option key={employee.id} value={employee.id}>
+                        {employee.first_name} {employee.last_name} ({employee.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Username */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={newUser.username}
+                  onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                  placeholder="Enter username"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                  placeholder="Enter email"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                  placeholder="Enter password (min 8 characters)"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={handleCreateUser}
+                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+              >
+                Create User
+              </button>
+              <button
+                onClick={() => {
+                  setShowCreateUser(false)
+                  setNewUser({
+                    role: 'admin',
+                    username: '',
+                    email: '',
+                    password: '',
+                    teacher_id: null,
+                    student_id: null,
+                    employee_id: null
+                  })
+                }}
                 className="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
               >
                 Cancel
