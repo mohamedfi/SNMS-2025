@@ -20,6 +20,35 @@ class RoleController extends Controller
     }
 
     /**
+     * Create a new role
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => 'required|string|unique:roles,name|max:255',
+            'display_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,id',
+        ]);
+
+        $role = Role::create([
+            'name' => $request->name,
+            'display_name' => $request->display_name,
+            'description' => $request->description,
+        ]);
+
+        if ($request->has('permissions')) {
+            $role->permissions()->attach($request->permissions);
+        }
+
+        return response()->json([
+            'message' => 'Role created successfully',
+            'role' => $role->load('permissions')
+        ], 201);
+    }
+
+    /**
      * Get all permissions grouped by module
      */
     public function permissions(): JsonResponse
