@@ -274,15 +274,21 @@ const SettingsPage = () => {
       {/* Users Tab */}
       {activeTab === 'users' && (
         <div>
-          {/* Create New User Button */}
-          <div className="mb-6">
-            <button
-              onClick={() => setShowCreateUser(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
-            >
-              <Plus className="h-5 w-5" />
-              Create New User
-            </button>
+          {/* User Management Header and Actions */}
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">User Management</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage system users and their access</p>
+              </div>
+              <button
+                onClick={() => setShowCreateUser(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-semibold shadow-md hover:shadow-lg"
+              >
+                <Plus className="h-5 w-5" />
+                Create New User
+              </button>
+            </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
